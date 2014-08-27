@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>html5 video chapter marker</title>
+	<style>
+		.clearfix:after{content: '.';display: block;clear: both;height: 0;overflow: hidden;visibility: hidden;}
+		.player{float: left;position: relative;}
+		.bar{position: relative;margin-top: -40px;height: 40px;background-color: #000;}
+		#markers{position: relative;line-height: 40px;overflow: hidden;font-size: 12px;color: #fff;}
+		#progress{position: absolute;height: 100%;background-color: #930;}
+		#markers span{display: inline-block;cursor: pointer;border-left: 1px solid #ccc;}
+	</style>
+</head>
+<body>
+	<div class="clearfix">
+		<div class="player">
+			<video id="video" width="960" height="408" controls poster="assets/sintel.jpg" autoplay>
+			  <source src="assets/sintel.mp4" type="video/mp4">
+			  <track id="track" kind="chapters" src="assets/chapters.vtt" default>
+			</video>
+			<div class="bar">
+				<div id="progress"></div>
+				<div id="markers"></div>
+			</div>
+		</div>
+	</div>
+	<script>
+		function $(id) {
+			return document.getElementById(id);
+		}
+		var video = $('video'),
+			track = $('track'),
+			markers = $('markers'),
+			progress = $('progress'),
+			duration;
+		track.addEventListener('load', onTrackLoad);
+		markers.addEventListener('click', onClickMarker);
+		video.addEventListener('timeupdate', onTimeUpdate);
+
+		function onTrackLoad() {
+			var cues = track.track.cues,
+				cue,
+				df = document.createDocumentFragment(),
+				totalWidth = markers.offsetWidth;
+			duration = cues[cues.length - 1].endTime;
+			for (var i = 0; cue = cues[i]; i++) {
+				df.appendChild(createMarker(cue, Math.floor(cue.endTime - cue.startTime) / duration * totalWidth - 1));
+			}
+			markers.appendChild(df);
+		};
+
+		function createMarker(cue, width) {
+			var element = document.createElement('span');
+			element.innerText = cue.text;
+			element.setAttribute('data-start', cue.startTime);
+			element.style.width = width + 'px';
+			return element;
+		}
+
+		function onClickMarker(event) {
+			video.currentTime = event.target.getAttribute('data-start');
+		}
+
+		function onTimeUpdate(event) {
+			progress.style.width = video.currentTime / duration * 100 + '%';
+		};
+	</script>
+</body>
+</html>
