@@ -17,6 +17,8 @@
 		<div class="player">
 			<video id="video" width="960" height="408" controls poster="assets/sintel.jpg" autoplay>
 			  <source src="assets/sintel.mp4" type="video/mp4">
+			  <!-- firefox not support mp4 but webm -->
+			  <source src="assets/sintel.webm" type="video/webm">
 			  <track id="track" kind="chapters" src="assets/chapters.vtt" default>
 			</video>
 			<div class="bar">
@@ -35,6 +37,8 @@
 			progress = $('progress'),
 			duration;
 		track.addEventListener('load', onTrackLoad);
+		// Bug in FF31 MAC: wrong event name
+		track.addEventListener('loaded', onTrackLoad);
 		markers.addEventListener('click', onClickMarker);
 		video.addEventListener('timeupdate', onTimeUpdate);
 
@@ -52,7 +56,7 @@
 
 		function createMarker(cue, width) {
 			var element = document.createElement('span');
-			element.innerText = cue.text;
+			element.innerHTML = cue.text;
 			element.setAttribute('data-start', cue.startTime);
 			element.style.width = width + 'px';
 			return element;
