@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>html5 video chapter marker</title>
+	<style>
+		.clearfix:after{content: '.';display: block;clear: both;height: 0;overflow: hidden;visibility: hidden;}
+		.player{float: left;}
+		#bar{position: relative;margin-top: -40px;height: 40px;line-height: 40px;text-align: center;cursor: pointer;color: #fff;font-size: 12px;background-color: #000;}
+		#progress{position: absolute;width: 0;height: 100%;background-color: #930;}
+		#thumb{display: none;position: absolute;bottom: 40px;width: 160px;height: 68px;}
+	</style>
+</head>
+<body>
+	<div class="clearfix">
+		<div class="player">
+			<video id="video" width="960" height="408" controls poster="assets/sintel.jpg" autoplay>
+			  <source src="assets/sintel.mp4" type="video/mp4">
+			  <!-- firefox not support mp4 but webm -->
+			  <source src="assets/sintel.webm" type="video/webm">
+			  <track id="track" kind="metadata" src="assets/thumbs.vtt" default>
+			</video>
+			<div id="bar">
+				<div id="thumb"></div>
+				<div id="progress"></div>
+				mouse over me to see the preview thumb
+			</div>
+		</div>
+	</div>
+	<script>
+		(function(document){
+			var video = $('video'),
+				track = $('track'),
+				progress = $('progress'),
+				bar = $('bar'),
+				thumb = $('thumb'),
+				cues;
+
+			track.addEventListener('load', onTrackLoad);
+			// Bug in FF31 MAC: wrong event name
+			track.addEventListener('loaded', onTrackLoad);
+			video.addEventListener('timeupdate', onTimeUpdate);
+			bar.addEventListener('click', onClickBar);
+			bar.addEventListener('mousemove', onMouseOverBar);
+			bar.addEventListener('mouseout', function(){
+				thumb.style.display = 'none';
+			});
+
+			function $(id) {
+				return document.getElementById(id);
+			}
+			function onTrackLoad() {
+				cues = track.track.cues;
+			};
+			function onTimeUpdate(event) {
+				progress.style.width = video.currentTime / video.duration * 100 + '%';
+			};
+
+			function getX(element){
+				var x = element.offsetLeft;
+				while(element = element.offsetParent){
+					x += element.offsetLeft;
+				}
+				return x;
+			}
+
+			function onClickBar(event){
+				var delta = event.pageX - getX(progress);
+				video.currentTime = delta/bar.offsetWidth*video.duration;
+			}
+
+			function onMouseOverBar(event){
+				var delta = event.pageX - getX(progress),
+					time = delta/bar.offsetWidth*video.duration,
+					uri,
+					left,
+					thumbWidth;
+				for(var i=0,cue;cue=cues[i];i++){
+					if(time>=cue.startTime&&time<=cue.endTime){
+						uri = cue.text;
+						break;
+					}
+				}
+				if(thumb.getAttribute('data-uri') !== uri){
+					thumb.setAttribute('data-uri', uri);
+					showThumb();
+				}
+				thumb.style.display = 'block';
+				thumbWidth = parseInt(thumb.style.width);
+				left = delta - thumbWidth/2;
+				thumb.style.left = Math.min(Math.max(0, left), bar.offsetWidth - thumbWidth) + 'px';
+			}
+
+			function showThumb(){
+				var uri = thumb.getAttribute('data-uri'),
+					cssText = '',
+					arr;
+				arr = uri.split('#');
+				cssText += 'background: url("assets/' + arr[0] + '")';
+				arr = arr[1].split('=');
+				arr = arr[1].split(',');
+				cssText += ' -' + arr[0] + 'px -' + arr[1] + 'px no-repeat;width: ' + arr[2] + 'px;' + 'height:' + arr[3] + 'px;';
+				thumb.style.cssText = cssText;
+			}
+		})(document);
+		
+	</script>
+</body>
+</html>
