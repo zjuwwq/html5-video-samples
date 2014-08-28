@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>html5 video chapter marker</title>
+	<title>html5 video preview thumbnail</title>
 	<style>
 		.clearfix:after{content: '.';display: block;clear: both;height: 0;overflow: hidden;visibility: hidden;}
 		.player{float: left;}
@@ -36,15 +36,15 @@
 				thumb = $('thumb'),
 				cues;
 
-			track.addEventListener('load', onTrackLoad);
+			track.addEventListener('load', onTrackLoad, false);
 			// Bug in FF31 MAC: wrong event name
-			track.addEventListener('loaded', onTrackLoad);
-			video.addEventListener('timeupdate', onTimeUpdate);
-			bar.addEventListener('click', onClickBar);
-			bar.addEventListener('mousemove', onMouseOverBar);
+			track.addEventListener('loaded', onTrackLoad, false);
+			video.addEventListener('timeupdate', onTimeUpdate, false);
+			bar.addEventListener('click', onClickBar, false);
+			bar.addEventListener('mousemove', onMouseOverBar, false);
 			bar.addEventListener('mouseout', function(){
 				thumb.style.display = 'none';
-			});
+			}, false);
 
 			function $(id) {
 				return document.getElementById(id);
@@ -70,7 +70,7 @@
 			}
 
 			function onMouseOverBar(event){
-				var delta = event.pageX - getX(progress),
+				var delta = event.pageX - getX(bar),
 					time = delta/bar.offsetWidth*video.duration,
 					uri,
 					left,

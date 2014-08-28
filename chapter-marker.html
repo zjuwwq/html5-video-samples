@@ -6,7 +6,7 @@
 	<style>
 		.clearfix:after{content: '.';display: block;clear: both;height: 0;overflow: hidden;visibility: hidden;}
 		.player{float: left;}
-		.bar{position: relative;margin-top: -40px;height: 40px;background-color: #000;}
+		#bar{position: relative;margin-top: -40px;height: 40px;background-color: #000;}
 		#markers{position: relative;line-height: 40px;overflow: hidden;font-size: 12px;color: #fff;}
 		#progress{position: absolute;height: 100%;background-color: #930;}
 		#markers span{display: inline-block;cursor: pointer;border-left: 1px solid #ccc;}
@@ -21,7 +21,7 @@
 			  <source src="assets/sintel.webm" type="video/webm">
 			  <track id="track" kind="chapters" src="assets/chapters.vtt" default>
 			</video>
-			<div class="bar">
+			<div id="bar">
 				<div id="progress"></div>
 				<div id="markers"></div>
 			</div>
@@ -34,11 +34,11 @@
 				markers = $('markers'),
 				progress = $('progress');
 
-			track.addEventListener('load', onTrackLoad);
+			track.addEventListener('load', onTrackLoad, false);
 			// Bug in FF31 MAC: wrong event name
-			track.addEventListener('loaded', onTrackLoad);
-			markers.addEventListener('click', onClickMarker);
-			video.addEventListener('timeupdate', onTimeUpdate);
+			track.addEventListener('loaded', onTrackLoad, false);
+			markers.addEventListener('click', onClickMarker, false);
+			video.addEventListener('timeupdate', onTimeUpdate, false);
 			
 			function $(id) {
 				return document.getElementById(id);

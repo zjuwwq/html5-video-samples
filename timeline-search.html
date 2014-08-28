@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>html5 video search in captions</title>
+	<style>
+		.clearfix:after{content: '.';display: block;clear: both;height: 0;overflow: hidden;visibility: hidden;}
+		.player{float: left;}
+		#bar{position: relative;margin-top: -40px;height: 40px;line-height: 40px;text-align: center;color: #fff;font-size: 12px;cursor: pointer;background-color: #000;}
+		#progress{position: absolute;height: 100%;background-color: #930;}
+		#flags{position: absolute;height: 100%;}
+		#flags span{position: absolute;height: 100%;background-color: #c00;}
+		form{margin: 8px 0 0 380px;}
+	</style>
+</head>
+<body>
+	<div class="clearfix">
+		<div class="player">
+			<video id="video" width="960" height="408" controls poster="assets/sintel.jpg" autoplay>
+			  <source src="assets/sintel.mp4" type="video/mp4">
+			  <!-- firefox not support mp4 but webm -->
+			  <source src="assets/sintel.webm" type="video/webm">
+			  <track id="track" kind="captions" src="assets/captions.vtt" default>
+			</video>
+			<div id="bar">
+				<div id="progress"></div>
+				<div id="flags"></div>
+				Search e.g. for "blade", "music" or "chicken" in captions
+			</div>
+		</div>
+	</div>
+	<form id="form">
+		<input id="query" type="search">
+		<input type="submit" value="Search">
+	</form>
+	<script>
+		(function(document){
+			var video = $('video'),
+				track = $('track'),
+				bar = $('bar'),
+				progress = $('progress'),
+				form = $('form'),
+				cues;
+
+			track.addEventListener('load', onTrackLoad, false);
+			// Bug in FF31 MAC: wrong event name
+			track.addEventListener('loaded', onTrackLoad, false);
+			video.addEventListener('timeupdate', onTimeUpdate, false);
+			bar.addEventListener('click', onClickBar, false);
+			form.addEventListener('submit', onSubmitSearch, false);
+			
+			function $(id) {
+				return document.getElementById(id);
+			}
+
+			function onTrackLoad() {
+				cues = track.track.cues;
+			};
+
+
+			function onTimeUpdate(event) {
+				progress.style.width = video.currentTime / video.duration * 100 + '%';
+			};
+
+			function getX(element){
+				var x = element.offsetLeft;
+				while(element = element.offsetParent){
+					x += element.offsetLeft;
+				}
+				return x;
+			}
+
+			function onClickBar(event){
+				var delta = event.pageX - getX(bar);
+				video.currentTime = delta/bar.offsetWidth*video.duration;
+			}
+
+			function onSubmitSearch(event){
+				event.preventDefault();
+				empty(flags);
+				var query = $('query').value.trim(),
+					matchedCues,
+					df;
+				if(!query) return;
+				matchedCues=[],
+				df = document.createDocumentFragment();
+				for(var i=0,cue;cue=cues[i];i++){
+					if(cue.text.indexOf(query)!==-1){
+						matchedCues.push(cue);
+					}
+				}
+
+				matchedCues.forEach(function(cue){
+					df.appendChild(createFlag(cue));
+				});
+
+				
+				flags.appendChild(df);
+			}
+
+			function empty(flags){
+				while(flags.firstChild){
+					flags.removeChild(flags.firstChild);
+				}
+			}
+
+			function createFlag(cue){
+				var element = document.createElement('span'),
+					barWidth = bar.offsetWidth,
+					cssText = '';
+				cssText += 'left:' + cue.startTime / video.duration * barWidth + 'px;';
+				cssText += 'width:' + (cue.endTime - cue.startTime) / video.duration * barWidth + 'px;';
+				element.style.cssText = cssText;
+				return element;
+			}
+		})(document);
+		
+	</script>
+</body>
+</html>
